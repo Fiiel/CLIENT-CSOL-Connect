@@ -3,8 +3,6 @@ using System.Net.Sockets;
 using System.Text;
 using System.Management;
 using System.Diagnostics;
-using Microsoft.VisualBasic.Devices;
-using System.Net.Http;
 
 namespace CSOL_Connect_Client_App
 {
@@ -13,11 +11,14 @@ namespace CSOL_Connect_Client_App
         private bool stopMonitoring = false;
         private bool stopKeyboardMonitoring = false;
 
+        private string serverAddress = "127.0.0.1";
+
         public Client_CSOLConnect()
         {
             InitializeComponent();
             this.Load += Client_CSOLConnect_Load;
         }
+    
 
         private void Client_CSOLConnect_Load(object sender, EventArgs e)
         {
@@ -26,6 +27,8 @@ namespace CSOL_Connect_Client_App
 
         private void Button_Connect_Click(object sender, EventArgs e)
         {
+            serverAddress = TextBox_ServerIP.Text;
+
             ForMouseDevice();
             ForKeyboardDevice();
             MonitorLANStatus();
@@ -39,10 +42,28 @@ namespace CSOL_Connect_Client_App
 
         private void Client_CSOLConnect_FormClosing(object sender, FormClosingEventArgs e)
         {
-            stopMonitoring = true;
-            stopKeyboardMonitoring = true;
+            if (e.CloseReason == CloseReason.UserClosing)
+            {
+                e.Cancel = true; // Cancel the default closing behavior
+                ShowCloseDialog(); // Show the custom closing dialog
+            }
         }
+        private void ShowCloseDialog()
+        {
+            var result = MessageBox.Show("Do you want to quit the program?", "Confirmation", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
 
+            if (result == DialogResult.Yes)
+            {
+                // User wants to quit the program
+                stopMonitoring = true;
+                stopKeyboardMonitoring = true;
+                Application.Exit();
+            }
+            else if (result == DialogResult.No)
+            {
+
+            }
+        }
 
         //-------------------------------------------------//
         //            For Mouse Port Connection            //
@@ -113,7 +134,6 @@ namespace CSOL_Connect_Client_App
         {
             try
             {
-                string serverAddress = "127.0.0.1"; // Replace with your server's IP address or hostname
                 int serverPort = 23000; // Replace with the port your server is listening on
 
                 using (TcpClient client = new TcpClient())
@@ -206,7 +226,6 @@ namespace CSOL_Connect_Client_App
         {
             try
             {
-                string serverAddress = "127.0.0.1"; // Replace with your server's IP address or hostname
                 int serverPort = 23000; // Replace with the port your server is listening on
 
                 // Include pcName in the message
@@ -272,7 +291,6 @@ namespace CSOL_Connect_Client_App
         {
             try
             {
-                string serverAddress = "127.0.0.1"; // Replace with your server's IP address or hostname
                 int serverPort = 23000; // Replace with the port your server is listening on
 
                 using (TcpClient client = new TcpClient())
