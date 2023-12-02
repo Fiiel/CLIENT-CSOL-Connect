@@ -90,14 +90,14 @@ namespace CSOL_Connect_Client_App
         //-------------------------------------------------//
 
         private bool isMouseConnected = false;
-        private string pcName = "elem1"; // Replace with the actual PC name
+        private string pcName = "elem2"; // Replace with the actual PC name
 
         private async void ForMouseDevice()
         {
             isMouseConnected = IsMouseConnected();
             DisplayMouseStatus(isMouseConnected);
 
-            string mouseMessage = $"{pcName}:{(isMouseConnected ? "Mouse is connected" : "Mouse is disconnected")}";
+            string mouseMessage = $"{pcName}:{(isMouseConnected ? "Mouse is connected." : "Mouse is disconnected")}";
 
             await SendMouseMessageToServerAsync(mouseMessage);
 
@@ -116,7 +116,7 @@ namespace CSOL_Connect_Client_App
                     isMouseConnected = newMouseStatus;
                     DisplayMouseStatus(isMouseConnected);
 
-                    string mouseMessage = $"{pcName}:{(isMouseConnected ? "Mouse is connected" : "Mouse is disconnected")}";
+                    string mouseMessage = $"{pcName}:{(isMouseConnected ? "Mouse is connected." : "Mouse is disconnected")}";
 
                     // Send the mouse status change message to the server asynchronously
                     SendMouseMessageToServerAsync(mouseMessage);
