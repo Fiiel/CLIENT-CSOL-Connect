@@ -4,18 +4,19 @@ using System.Text;
 using System.Management;
 using System.Diagnostics;
 using Microsoft.VisualBasic.Devices;
+using System.Net.Http;
 
 namespace CSOL_Connect_Client_App
 {
     public partial class Client_CSOLConnect : Form
     {
+        private bool stopMonitoring = false;
+        private bool stopKeyboardMonitoring = false;
+
         public Client_CSOLConnect()
         {
             InitializeComponent();
             this.Load += Client_CSOLConnect_Load;
-
-            //ForLANPort();
-
         }
 
         private void Client_CSOLConnect_Load(object sender, EventArgs e)
@@ -27,74 +28,20 @@ namespace CSOL_Connect_Client_App
         {
             ForMouseDevice();
             ForKeyboardDevice();
+            MonitorLANStatus();
         }
 
         private void Button_Stop_Click(object sender, EventArgs e)
         {
-            StopTcpClient();
+            stopMonitoring = true;
+            stopKeyboardMonitoring = true;
         }
 
         private void Client_CSOLConnect_FormClosing(object sender, FormClosingEventArgs e)
         {
-            StopTcpClient();
+            stopMonitoring = true;
+            stopKeyboardMonitoring = true;
         }
-
-        //private async void Client_CSOLConnect_Load(object sender, EventArgs e)
-        //{
-        //    await Task.Run(() => CheckEthernetStatus());
-        //}
-
-        //private void CheckEthernetStatus()
-        //{
-        //    NetworkInterface[] adapters = NetworkInterface.GetAllNetworkInterfaces();
-
-        //    foreach (NetworkInterface n in adapters)
-        //    {
-        //        if (n.Name == "Ethernet 3")
-        //        {
-        //            string message = string.Format("\t{0} is {1}", n.Name, n.OperationalStatus);
-        //            Console.WriteLine(message);
-
-        //            // Send the message to the server asynchronously
-        //            SendToServerAsync(message).Wait();
-
-        //            break; // Stop looping once you find the desired interface
-        //        }
-        //    }
-        //}
-
-        //private async Task SendToServerAsync(string message)
-        //{
-        //    try
-        //    {
-        //        // Define the server address and port
-        //        string serverAddress = "127.0.0.1"; // Replace with your server's IP address or hostname
-        //        int serverPort = 23000; // Replace with the port your server is listening on
-
-        //        // Create a TcpClient to connect to the server
-        //        using (TcpClient client = new TcpClient())
-        //        {
-        //            await client.ConnectAsync(serverAddress, serverPort);
-
-        //            // Get a stream for writing data to the server
-        //            using (NetworkStream stream = client.GetStream())
-        //            {
-        //                // Convert the message to bytes and send it to the server
-        //                byte[] data = Encoding.UTF8.GetBytes(message);
-        //                await stream.WriteAsync(data, 0, data.Length);
-        //            }
-        //        }
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        MessageBox.Show("Error sending data to server: " + ex.Message);
-        //    }
-        //}
-
-        //private void AddressChangedCallback(object sender, EventArgs e)
-        //{
-        //    CheckEthernetStatus(); // Check the Ethernet status whenever there's an address change event
-        //}
 
 
         //-------------------------------------------------//
@@ -102,7 +49,7 @@ namespace CSOL_Connect_Client_App
         //-------------------------------------------------//
 
         private bool isMouseConnected = false;
-        private string pcName = "elem2"; // Replace with the actual PC name
+        private string pcName = Environment.MachineName; // Replace with the actual PC name
 
         private async void ForMouseDevice()
         {
@@ -119,7 +66,7 @@ namespace CSOL_Connect_Client_App
 
         private void MonitorMouseStatus()
         {
-            while (true)
+            while (!stopMonitoring)
             {
                 bool newMouseStatus = IsMouseConnected();
 
@@ -214,9 +161,9 @@ namespace CSOL_Connect_Client_App
 
             // Set up a WMI event query to monitor USB device connection and disconnection
             WqlEventQuery query = new WqlEventQuery("SELECT * FROM __InstanceOperationEvent " +
-                                                    "WITHIN 2 " +
-                                                    "WHERE TargetInstance ISA 'Win32_PnPEntity' " +
-                                                    "AND TargetInstance.Description LIKE '%keyboard%'");
+                                                "WITHIN 2 " +
+                                                "WHERE TargetInstance ISA 'Win32_PnPEntity' " +
+                                                "AND TargetInstance.Description LIKE '%keyboard%'");
 
             ManagementEventWatcher watcher = new ManagementEventWatcher(query);
             watcher.EventArrived += async (s, ev) =>
@@ -227,15 +174,18 @@ namespace CSOL_Connect_Client_App
                     string deviceName = mbo.Properties["Name"].Value.ToString();
                     string eventType = ev.NewEvent.ClassPath.ClassName;
 
-                    if (eventType == "__InstanceCreationEvent")
+                    if (!stopKeyboardMonitoring) // Check the flag before processing events
                     {
-                        Debug.WriteLine($"Keyboard is connected");
-                        await SendKeyboardMessageToServerAsync($"Keyboard is connected");
-                    }
-                    else if (eventType == "__InstanceDeletionEvent")
-                    {
-                        Debug.WriteLine($"Keyboard is disconnected");
-                        await SendKeyboardMessageToServerAsync($"Keyboard is disconnected");
+                        if (eventType == "__InstanceCreationEvent")
+                        {
+                            Debug.WriteLine($"Keyboard is connected");
+                            await SendKeyboardMessageToServerAsync($"Keyboard is connected");
+                        }
+                        else if (eventType == "__InstanceDeletionEvent")
+                        {
+                            Debug.WriteLine($"Keyboard is disconnected");
+                            await SendKeyboardMessageToServerAsync($"Keyboard is disconnected");
+                        }
                     }
                 }
             };
@@ -276,6 +226,69 @@ namespace CSOL_Connect_Client_App
             catch (Exception ex)
             {
                 Debug.WriteLine("Error sending message to server: " + ex.Message);
+            }
+        }
+
+
+        ////-------------------------------------------------//
+        ////            For LAN Port Connection              //
+        ////-------------------------------------------------//
+
+        private async void MonitorLANStatus()
+        {
+            while (!stopMonitoring)
+            {
+                bool isLANConnected = IsLANConnected();
+
+                if (isLANConnected)
+                {
+                    await SendLANMessageToServerAsync($"{pcName}:LAN is connected");
+                }
+                else
+                {
+                    await SendLANMessageToServerAsync($"{pcName}:LAN is disconnected");
+                }
+
+                // Sleep for a short duration before checking again (adjust as needed).
+                System.Threading.Thread.Sleep(8000); // Check every 8 seconds
+            }
+        }
+
+        private bool IsLANConnected()
+        {
+            // Use NetworkInterface to check the status of the LAN connection
+            foreach (NetworkInterface networkInterface in NetworkInterface.GetAllNetworkInterfaces())
+            {
+                if (networkInterface.NetworkInterfaceType == NetworkInterfaceType.Ethernet &&
+                    networkInterface.OperationalStatus == OperationalStatus.Up)
+                {
+                    return true; // LAN is connected
+                }
+            }
+            return false; // LAN is disconnected
+        }
+
+        private async Task SendLANMessageToServerAsync(string message)
+        {
+            try
+            {
+                string serverAddress = "127.0.0.1"; // Replace with your server's IP address or hostname
+                int serverPort = 23000; // Replace with the port your server is listening on
+
+                using (TcpClient client = new TcpClient())
+                {
+                    await client.ConnectAsync(serverAddress, serverPort);
+
+                    using (NetworkStream stream = client.GetStream())
+                    {
+                        byte[] data = Encoding.UTF8.GetBytes(message);
+                        await stream.WriteAsync(data, 0, data.Length);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine("Error sending LAN message to server: " + ex.Message);
             }
         }
     }
