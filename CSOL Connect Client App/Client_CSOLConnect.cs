@@ -12,20 +12,32 @@ namespace CSOL_Connect_Client_App
         public Client_CSOLConnect()
         {
             InitializeComponent();
+            this.Load += Client_CSOLConnect_Load;
+
             //ForLANPort();
+
+        }
+
+        private void Client_CSOLConnect_Load(object sender, EventArgs e)
+        {
+            Label_PCName.Text = Environment.MachineName;
+        }
+
+        private void Button_Connect_Click(object sender, EventArgs e)
+        {
             ForMouseDevice();
             ForKeyboardDevice();
         }
 
-        ////-------------------------------------------------//
-        ////            For LAN Port Connection              //
-        ////-------------------------------------------------//
+        private void Button_Stop_Click(object sender, EventArgs e)
+        {
+            StopTcpClient();
+        }
 
-        //private void ForLANPort()
-        //{
-        //    NetworkChange.NetworkAddressChanged += new NetworkAddressChangedEventHandler(AddressChangedCallback);
-        //    Load += Client_CSOLConnect_Load;
-        //}
+        private void Client_CSOLConnect_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            StopTcpClient();
+        }
 
         //private async void Client_CSOLConnect_Load(object sender, EventArgs e)
         //{
