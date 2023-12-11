@@ -13,6 +13,8 @@ namespace CSOL_Connect_Client_App
 
         private string serverAddress = "127.0.0.1";
 
+        private bool errorShown = false;
+
         public Client_CSOLConnect()
         {
             InitializeComponent();
@@ -161,7 +163,11 @@ namespace CSOL_Connect_Client_App
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Error sending message to server: " + ex.Message + Environment.NewLine + "Please quit the application, and open it again");
+                if (!errorShown)
+                {
+                    MessageBox.Show("Error sending message to server: " + ex.Message + Environment.NewLine + "Please quit the application, and open it again");
+                    errorShown = true;
+                }
             }
         }
 
@@ -256,7 +262,11 @@ namespace CSOL_Connect_Client_App
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Error sending message to server: " + ex.Message + Environment.NewLine + "Please quit the application, and open it again");
+                if (!errorShown)
+                {
+                    MessageBox.Show("Error sending message to server: " + ex.Message + Environment.NewLine + "Please quit the application, and open it again");
+                    errorShown = true;
+                }
             }
         }
 
