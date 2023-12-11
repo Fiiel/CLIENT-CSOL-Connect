@@ -27,7 +27,16 @@ namespace CSOL_Connect_Client_App
 
         private async void Button_Connect_Click(object sender, EventArgs e)
         {
+            if (string.IsNullOrEmpty(TextBox_ServerIP.Text))
+            {
+                MessageBox.Show("Server IP cannot be empty. Please enter a valid server IP.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return; // Don't proceed with the connection if the server IP is empty
+            }
+
             serverAddress = TextBox_ServerIP.Text;
+
+            Label_StatusConnection.Text = "Connected";
+            Label_StatusConnection.ForeColor = Color.Green;
 
             await Task.Run(() => ForMouseDevice());
             await Task.Run(() => ForKeyboardDevice());
@@ -36,6 +45,9 @@ namespace CSOL_Connect_Client_App
 
         private void Button_Stop_Click(object sender, EventArgs e)
         {
+            Label_StatusConnection.Text = "Stopped";
+            Label_StatusConnection.ForeColor = Color.Red;
+
             stopMonitoring = true;
             stopKeyboardMonitoring = true;
         }
