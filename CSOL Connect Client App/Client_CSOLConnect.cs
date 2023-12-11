@@ -31,7 +31,7 @@ namespace CSOL_Connect_Client_App
 
             ForMouseDevice();
             ForKeyboardDevice();
-            MonitorLANStatus();
+            //MonitorLANStatus();
         }
 
         private void Button_Stop_Click(object sender, EventArgs e)
@@ -253,61 +253,61 @@ namespace CSOL_Connect_Client_App
         ////            For LAN Port Connection              //
         ////-------------------------------------------------//
 
-        private async void MonitorLANStatus()
-        {
-            while (!stopMonitoring)
-            {
-                bool isLANConnected = IsLANConnected();
+        //private async void MonitorLANStatus()
+        //{
+        //    while (!stopMonitoring)
+        //    {
+        //        bool isLANConnected = IsLANConnected();
 
-                if (isLANConnected)
-                {
-                    await SendLANMessageToServerAsync($"{pcName}:LAN is connected");
-                }
-                else
-                {
-                    await SendLANMessageToServerAsync($"{pcName}:LAN is disconnected");
-                }
+        //        if (isLANConnected)
+        //        {
+        //            await SendLANMessageToServerAsync($"{pcName}:LAN is connected");
+        //        }
+        //        else
+        //        {
+        //            await SendLANMessageToServerAsync($"{pcName}:LAN is disconnected");
+        //        }
 
-                // Sleep for a short duration before checking again (adjust as needed).
-                System.Threading.Thread.Sleep(8000); // Check every 8 seconds
-            }
-        }
+        //        // Sleep for a short duration before checking again (adjust as needed).
+        //        System.Threading.Thread.Sleep(8000); // Check every 8 seconds
+        //    }
+        //}
 
-        private bool IsLANConnected()
-        {
-            // Use NetworkInterface to check the status of the LAN connection
-            foreach (NetworkInterface networkInterface in NetworkInterface.GetAllNetworkInterfaces())
-            {
-                if (networkInterface.NetworkInterfaceType == NetworkInterfaceType.Ethernet &&
-                    networkInterface.OperationalStatus == OperationalStatus.Up)
-                {
-                    return true; // LAN is connected
-                }
-            }
-            return false; // LAN is disconnected
-        }
+        //private bool IsLANConnected()
+        //{
+        //    // Use NetworkInterface to check the status of the LAN connection
+        //    foreach (NetworkInterface networkInterface in NetworkInterface.GetAllNetworkInterfaces())
+        //    {
+        //        if (networkInterface.NetworkInterfaceType == NetworkInterfaceType.Ethernet &&
+        //            networkInterface.OperationalStatus == OperationalStatus.Up)
+        //        {
+        //            return true; // LAN is connected
+        //        }
+        //    }
+        //    return false; // LAN is disconnected
+        //}
 
-        private async Task SendLANMessageToServerAsync(string message)
-        {
-            try
-            {
-                int serverPort = 23000; // Replace with the port your server is listening on
+        //private async Task SendLANMessageToServerAsync(string message)
+        //{
+        //    try
+        //    {
+        //        int serverPort = 23000; // Replace with the port your server is listening on
 
-                using (TcpClient client = new TcpClient())
-                {
-                    await client.ConnectAsync(serverAddress, serverPort);
+        //        using (TcpClient client = new TcpClient())
+        //        {
+        //            await client.ConnectAsync(serverAddress, serverPort);
 
-                    using (NetworkStream stream = client.GetStream())
-                    {
-                        byte[] data = Encoding.UTF8.GetBytes(message);
-                        await stream.WriteAsync(data, 0, data.Length);
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine("Error sending LAN message to server: " + ex.Message);
-            }
-        }
+        //            using (NetworkStream stream = client.GetStream())
+        //            {
+        //                byte[] data = Encoding.UTF8.GetBytes(message);
+        //                await stream.WriteAsync(data, 0, data.Length);
+        //            }
+        //        }
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        Debug.WriteLine("Error sending LAN message to server: " + ex.Message);
+        //    }
+        //}
     }
 }
