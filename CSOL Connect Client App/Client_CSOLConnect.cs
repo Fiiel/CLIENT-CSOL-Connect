@@ -35,6 +35,9 @@ namespace CSOL_Connect_Client_App
                 return; // Don't proceed with the connection if the server IP is empty
             }
 
+            // Disable Button_Connect
+            Button_Connect.Enabled = false;
+
             serverAddress = TextBox_ServerIP.Text;
 
             Label_StatusConnection.Text = "Connected";
@@ -43,6 +46,8 @@ namespace CSOL_Connect_Client_App
             await Task.Run(() => ForMouseDevice());
             await Task.Run(() => ForKeyboardDevice());
             //MonitorLANStatus();
+
+            // Enable Button_Connect after the tasks are completed
         }
 
         private void Button_Stop_Click(object sender, EventArgs e)
@@ -52,6 +57,9 @@ namespace CSOL_Connect_Client_App
 
             stopMonitoring = true;
             stopKeyboardMonitoring = true;
+
+            // Enable Button_Connect when stopping the connection
+            Button_Connect.Enabled = true;
         }
 
         private void Client_CSOLConnect_FormClosing(object sender, FormClosingEventArgs e)
