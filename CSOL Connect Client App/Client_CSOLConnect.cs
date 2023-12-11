@@ -25,12 +25,12 @@ namespace CSOL_Connect_Client_App
             Label_PCName.Text = Environment.MachineName;
         }
 
-        private void Button_Connect_Click(object sender, EventArgs e)
+        private async void Button_Connect_Click(object sender, EventArgs e)
         {
             serverAddress = TextBox_ServerIP.Text;
 
-            ForMouseDevice();
-            ForKeyboardDevice();
+            await Task.Run(() => ForMouseDevice());
+            await Task.Run(() => ForKeyboardDevice());
             //MonitorLANStatus();
         }
 
@@ -82,14 +82,14 @@ namespace CSOL_Connect_Client_App
             await SendMouseMessageToServerAsync(mouseMessage);
 
             // Start monitoring the mouse status in the background
-            Task.Run(() => MonitorMouseStatus());
+            await Task.Run(() => MonitorMouseStatus());
         }
 
-        private void MonitorMouseStatus()
+        private async void MonitorMouseStatus()
         {
             while (!stopMonitoring)
             {
-                bool newMouseStatus = IsMouseConnected();
+                bool newMouseStatus = await Task.Run(() => IsMouseConnected());
 
                 if (newMouseStatus != isMouseConnected)
                 {
@@ -99,10 +99,10 @@ namespace CSOL_Connect_Client_App
                     string mouseMessage = $"{pcName}:{(isMouseConnected ? "Mouse is connected." : "Mouse is disconnected")}";
 
                     // Send the mouse status change message to the server asynchronously
-                    SendMouseMessageToServerAsync(mouseMessage);
+                    await Task.Run(() => SendMouseMessageToServerAsync(mouseMessage));
                 }
 
-                System.Threading.Thread.Sleep(1000); // Sleep for 1 second before checking again (adjust as needed).
+                await Task.Delay(1000); // Use Task.Delay instead of Thread.Sleep in async methods.
             }
         }
 
@@ -149,7 +149,7 @@ namespace CSOL_Connect_Client_App
             }
             catch (Exception ex)
             {
-                Debug.WriteLine("Error sending message to server: " + ex.Message);
+                MessageBox.Show("Error sending message to server: " + ex.Message + Environment.NewLine + "Please quit the application, and open it again");
             }
         }
 
@@ -186,7 +186,7 @@ namespace CSOL_Connect_Client_App
                                                 "AND TargetInstance.Description LIKE '%keyboard%'");
 
             ManagementEventWatcher watcher = new ManagementEventWatcher(query);
-            watcher.EventArrived += async (s, ev) =>
+            watcher.EventArrived += (s, ev) =>
             {
                 PropertyData pd = ev.NewEvent.Properties["TargetInstance"];
                 if (pd != null && pd.Value is ManagementBaseObject mbo)
@@ -199,18 +199,18 @@ namespace CSOL_Connect_Client_App
                         if (eventType == "__InstanceCreationEvent")
                         {
                             Debug.WriteLine($"Keyboard is connected");
-                            await SendKeyboardMessageToServerAsync($"Keyboard is connected");
+                            this.Invoke((Action)(async () => await SendKeyboardMessageToServerAsync($"Keyboard is connected")));
                         }
                         else if (eventType == "__InstanceDeletionEvent")
                         {
                             Debug.WriteLine($"Keyboard is disconnected");
-                            await SendKeyboardMessageToServerAsync($"Keyboard is disconnected");
+                            this.Invoke((Action)(async () => await SendKeyboardMessageToServerAsync($"Keyboard is disconnected")));
                         }
                     }
                 }
             };
 
-            watcher.Start();
+            await Task.Run(() => watcher.Start());
         }
 
         private string[] GetConnectedKeyboards()
@@ -244,7 +244,7 @@ namespace CSOL_Connect_Client_App
             }
             catch (Exception ex)
             {
-                Debug.WriteLine("Error sending message to server: " + ex.Message);
+                MessageBox.Show("Error sending message to server: " + ex.Message + Environment.NewLine + "Please quit the application, and open it again");
             }
         }
 
