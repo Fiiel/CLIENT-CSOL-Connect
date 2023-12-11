@@ -5,8 +5,6 @@ VisualStudioVersion = 17.7.34024.191
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CLIENT CSOL Connect", "CSOL Connect Client App\CLIENT CSOL Connect.csproj", "{18E7742C-0D58-48E7-A30A-84183143AB00}"
 EndProject
-Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "CLIENT CSOL Connect", "CLIENT CSOL Connect\CLIENT CSOL Connect.vdproj", "{7EC5FA0A-DC79-4BB3-BAB6-53B43FC2EF92}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -17,8 +15,6 @@ Global
 		{18E7742C-0D58-48E7-A30A-84183143AB00}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{18E7742C-0D58-48E7-A30A-84183143AB00}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{18E7742C-0D58-48E7-A30A-84183143AB00}.Release|Any CPU.Build.0 = Release|Any CPU
-		{7EC5FA0A-DC79-4BB3-BAB6-53B43FC2EF92}.Debug|Any CPU.ActiveCfg = Debug
-		{7EC5FA0A-DC79-4BB3-BAB6-53B43FC2EF92}.Release|Any CPU.ActiveCfg = Release
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
